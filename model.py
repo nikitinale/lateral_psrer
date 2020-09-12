@@ -350,10 +350,10 @@ class CatchmentArea():
     return land_area
 
   def CalculateTotalStockAm(self):
-   '''
-   total stock of Am in a lake
-   ''' 
-   total_stock = 0
+    '''
+    total stock of Am in a lake
+    ''' 
+    total_stock = 0
     for cell in self.catchment:
       if cell.land_type != 'w':
         total_stock += cell.isotopes[1]['top_layer']['zapas'] + cell.isotopes[1]['bottom_layer']['zapas']
