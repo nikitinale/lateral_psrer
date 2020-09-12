@@ -277,6 +277,10 @@ class CatchmentArea():
         cell.calculate_max_outflow_capicity()
 
   def sediment_flow(self):
+    '''
+    Calculating downward flow of sediments from cells to other cells
+    and redistribution radioisotopes adsorbed on soil particles
+    '''
     flow_run = True
     while flow_run:
       flow_run = False
@@ -305,6 +309,9 @@ class CatchmentArea():
           flow_run = True
 
   def one_season_flow(self, cumulative=True):
+    '''
+    Calculating redistribution of radioisotopes in a catchmant area during one season(year)
+    '''
     for cell in self.catchment :
       cell.sediment_inflow = 0 # Здесь обнуляю перенос массы почвы до ее подсчета
       if cell.land_type == 'w' and not cumulative:
@@ -322,12 +329,20 @@ class CatchmentArea():
         cell.output_cell = cell.output_cell_storage
 
   def CalculateTotalArea(self):
+    '''
+    total area includes water surface
+    '''
     total_area = 0
     for cell in self.catchment:
       total_area += cell.size**2
     return total_area
 
   def CalculateLandArea(self):
+    '''
+    total area except water surface
+    we need it for calculating transfer factor = 
+    radioisotopes added into water body / catchment area 
+    '''
     land_area = 0
     for cell in self.catchment:
       if cell.land_type != 'w':
@@ -335,7 +350,10 @@ class CatchmentArea():
     return land_area
 
   def CalculateTotalStockAm(self):
-    total_stock = 0
+   '''
+   total stock of Am in a lake
+   ''' 
+   total_stock = 0
     for cell in self.catchment:
       if cell.land_type != 'w':
         total_stock += cell.isotopes[1]['top_layer']['zapas'] + cell.isotopes[1]['bottom_layer']['zapas']
@@ -353,6 +371,10 @@ class CatchmentArea():
     return total_stock/1000
 
   def init_pu_contamination(self, pu241):
+    '''
+    We need Pu-241 for modelling Am-241 behaviour because Am-241 is formed from Pu-241 constantly.
+    The only source of Am-241 in the area subjected to Chernobyl catastrophe is Pu-241
+    '''
     for cell in self.catchment:
       cell.isotopes[1]['top_layer']['zapas'] = 0.0
       cell.isotopes[1]['top_layer']['activity_concentration'] = 0.0
@@ -391,6 +413,14 @@ class CatchmentArea():
       cell.isotopes[2] = cell.pu241
 
   def init_cs_contamination(self, total_area, land_area):
+    '''
+    We have information about stack of Cs-137 in a catchment area 
+    only at current moment (2018-2019).
+    If we want model redistribution of the radioisotopes 
+    starting the first year after the catastrophe we need calculate initial stoke from the 
+    half-life law and evenly distribute the radioisotope on the area. 
+    We have not any data on unevenly deposition of radioisotopes.
+    '''
     total_cs = 0.0
     for cell in self.catchment:
       if cell.land_type != 'w':
@@ -439,8 +469,12 @@ class CatchmentArea():
     for cell in self.catchment:
       if cell.land_type == 'w':
         cell.isotopes[0]['top_layer']['zapas'] += add_from_liquid
+        # inflow in dissolwed only state is modelled only for first radioisotope (Cs-137)
 
   def one_iteration(self, outfil=outfile):
+    '''
+    routines for calculating redistribution of radionucledes during one current season
+    '''
     self.one_season_flow()
     mod_data = self.calculate_pond_accumulation()
     out_string = '%d,%.3e,%.2e,%.2e,%.2e\n' % (i, mod_data[0], mod_data[1], mod_data[2], mod_data[3])
@@ -448,6 +482,10 @@ class CatchmentArea():
       outfl.write(out_string)
 
   def many_iterations(self, period, outfil=outfile, cumulative=True):
+    '''
+    routines for calculating redistribution of radionuclides during several years 
+    starting fron year of their deposition
+    '''
     disolved_cs137 = 0
     disolved_am241 = 0
     sediments = 0
@@ -469,10 +507,10 @@ class CatchmentArea():
         disolved_cs137 -= cs137_decay_constant * disolved_cs137
       else:
         disolved_cs137 = mod_data[2]
-      ##disolved_am241 += mod_data[3]
       sediments += mod_data[0]
     if cumulative:
       # полный запас радионуклидов с учетом первоначальных выпадений total=True
+      # total stack of the radioisotopes taking into account the initial deposition
       mod_data = self.calculate_pond_accumulation(total=True)
     else:
       mod_data = self.calculate_pond_accumulation()
@@ -485,6 +523,9 @@ class CatchmentArea():
       return sediments, mod_data[1], disolved_cs137, mod_data[3]
 
   def surface_redistribution(self, period):
+    '''
+    Calculating redistribution of the radioisotopes on the dry land area of catchment
+    '''
     contamination = np.array([])
     # Calculate initial stock of ^{241}Pu based on the current (2018) stock of ^{241}Am #
     total_area = self.CalculateTotalArea()
