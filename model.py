@@ -238,7 +238,7 @@ class SoilCell:
         isotop['top_layer']['soluble_zapas'] = isotop['top_layer']['soluble_part'] * isotop['top_layer']['zapas']
 
   def pond_clearing(self):
-    ''' Удаляем весь смытый цезий со дна водоема, чтобы считать вынос только за один год
+    ''' Procedure for calculating activity of a radioisotope recieved by pond in a single year
     '''
     for isotop in self.isotopes:
       isotop['top_layer']['activity_concentration'] = 0.0
@@ -252,13 +252,16 @@ class SoilCell:
 
 class CatchmentArea():
   '''
+     The class describes catchment area at whole. 
+     catchment is a list of cells.
+     The class includes procedures for initiation of cells for flows calculations and procedures for different components of inflow and outflow in/from cells
      Класс, описывающий водосбор в целом, содержит catchment -- массив с отдельными ячейками модели
      Содержит функции подготовки ячеек к расчету стока и собственно функции рассчета стока
   '''
   def __init__(self, datafile=datafile):
     self.catchment = []
     with open(datafile) as f:
-      reader = csv.reader(f)
+      reader = csv.reader(f) # read description of main parameters of cells in the catchment area from a file
       for row in reader:
         SC = SoilCell(int(row[0]), int(row[1]), float(row[2]), str(row[3]), float(row[4]), float(row[5]), float(row[8]), float(row[9]), cs137_s_part=float(row[6]), w0=float(row[7]))
         self.catchment.append(SC)
