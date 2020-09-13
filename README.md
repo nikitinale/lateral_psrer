@@ -5,4 +5,4 @@ Model of Spatial Redistribution of Long-lived Radioisotopes in Catchment Areas o
 
 [Analysis of inflow dynamics](https://github.com/nikitinale/lateral_psrer/blob/master/inflow_dynamics.ipynb)
 
-[Analysis of spatial redistribution]()
+[Analysis of spatial redistribution](https://github.com/nikitinale/lateral_psrer/blob/master/redistribution.ipynb)
